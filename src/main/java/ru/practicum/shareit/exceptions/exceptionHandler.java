@@ -15,7 +15,15 @@ public class exceptionHandler {
         return Map.of("error", e.getMessage());
     }
 
-    @ExceptionHandler({UserNotFoundException.class})
+    @ExceptionHandler({ItemForbiddenException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, String> handle403(RuntimeException e) {
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler(
+            {UserNotFoundException.class,
+            ItemNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handle404(RuntimeException e) {
         return Map.of("error", e.getMessage());
