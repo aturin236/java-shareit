@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ItemForbiddenException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
@@ -26,6 +28,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAllItems() {
+        log.debug("Запрос getAllItems");
         return itemRepository.getAllItem().stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -33,6 +36,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAllItemsByUser(Long userId) {
+        log.debug("Запрос getAllItemsByUser по userId - {}", userId);
         checkUserExist(userId);
         return itemRepository.getAllItemByUser(userId).stream()
                 .map(ItemMapper::toItemDto)
@@ -41,6 +45,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getItemById(Long userId, Long itemId) {
+        log.debug("Запрос getItemById по userId - {} и itemId - {}", userId, itemId);
         checkUserExist(userId);
         Optional<Item> item = itemRepository.getItemById(itemId);
         if (item.isEmpty()) {
@@ -54,6 +59,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto saveItem(Long userId, ItemDto itemDto) {
+        log.debug("Запрос saveItem по userId - {} для вещи - {}", userId, itemDto.getName());
         User user = checkUserExist(userId);
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
@@ -63,6 +69,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public @Valid ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
+        log.debug("Запрос updateItem по userId - {} и itemId - {}", userId, itemId);
         checkUserExist(userId);
         Optional<Item> itemOptional = itemRepository.getItemById(itemId);
         if (itemOptional.isEmpty()) {
@@ -89,6 +96,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItem(String text) {
+        log.debug("Запрос searchItem по строке - {}", text);
         return itemRepository.searchItems(text).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());

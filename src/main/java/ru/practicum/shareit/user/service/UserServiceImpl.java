@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.UserAlreadyExistException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
@@ -15,12 +16,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
     public List<UserDto> getAllUsers() {
+        log.debug("Запрос getAllUsers");
         return userRepository.getAllUsers().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
@@ -28,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(Long userId) {
+        log.debug("Запрос getUserById по userId - {}", userId);
         Optional<User> user = userRepository.getUserById(userId);
         if (user.isEmpty()) {
             throw new UserNotFoundException(
@@ -40,6 +44,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto saveUser(UserDto userDto) {
+        log.debug("Запрос saveUser по email - {}", userDto.getEmail());
         if (userRepository.getUserByEmail(userDto.getEmail()).isPresent()) {
             throw new UserAlreadyExistException(
                     String.format("Пользователь с email=%s уже существует", userDto.getEmail())
@@ -54,6 +59,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public @Valid UserDto updateUser(Long userId, UserDto userDto) {
+        log.debug("Запрос updateUser по userId - {}", userId);
         Optional<User> userOptional = userRepository.getUserById(userId);
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException(
@@ -79,6 +85,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
+        log.debug("Запрос deleteUser по userId - {}", userId);
         Optional<User> user = userRepository.getUserById(userId);
         if (user.isEmpty()) {
             throw new UserNotFoundException(
