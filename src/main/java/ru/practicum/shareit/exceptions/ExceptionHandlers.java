@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Map;
 
 @RestControllerAdvice
-public class exceptionHandler {
+public class ExceptionHandlers {
     @ExceptionHandler({UserAlreadyExistException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handle409(RuntimeException e) {
@@ -21,9 +21,7 @@ public class exceptionHandler {
         return Map.of("error", e.getMessage());
     }
 
-    @ExceptionHandler(
-            {UserNotFoundException.class,
-            ItemNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handle404(RuntimeException e) {
         return Map.of("error", e.getMessage());

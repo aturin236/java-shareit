@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(path ="/items")
+@RequestMapping(path="/items")
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;

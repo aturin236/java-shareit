@@ -23,14 +23,14 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public List<Item> getAllItemByUser(Long userId) {
         return items.stream()
-                .filter(x-> Objects.equals(x.getOwner().getId(), userId))
+                .filter(x -> Objects.equals(x.getOwner().getId(), userId))
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Item> getItemById(Long itemId) {
         return items.stream()
-                .filter(x-> Objects.equals(x.getId(), itemId))
+                .filter(x -> Objects.equals(x.getId(), itemId))
                 .findFirst();
     }
 
@@ -56,7 +56,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 
         return items.stream()
                 .filter(Item::isAvailable)
-                .filter(x-> pattern.matcher(x.getName()).matches() || pattern.matcher(x.getDescription()).matches())
+                .filter(x -> pattern.matcher(x.getName()).matches() || pattern.matcher(x.getDescription()).matches())
                 .collect(Collectors.toList());
     }
 
