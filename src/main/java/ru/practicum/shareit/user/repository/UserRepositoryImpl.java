@@ -11,6 +11,7 @@ import java.util.Optional;
 public class UserRepositoryImpl implements UserRepository {
     private static long idCounter;
     private final List<User> users = new ArrayList<>();
+
     @Override
     public List<User> getAllUsers() {
         return users;
