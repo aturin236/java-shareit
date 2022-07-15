@@ -103,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private User checkUserExist(Long userId) {
-        Optional<User> user = userRepository.getUserById(userId);
+        Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             throw new UserNotFoundException(
                     String.format("Пользователь с id=%s не найден", userId)

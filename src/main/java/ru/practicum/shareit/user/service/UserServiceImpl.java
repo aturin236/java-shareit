@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAllUsers() {
         log.debug("Запрос getAllUsers");
-        return userRepository.getAllUsers().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long userId) {
         log.debug("Запрос getUserById по userId - {}", userId);
-        Optional<User> user = userRepository.getUserById(userId);
+        Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             throw new UserNotFoundException(
                     String.format("Пользователь с id=%s не найден", userId)
@@ -45,13 +45,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto saveUser(UserDto userDto) {
         log.debug("Запрос saveUser по email - {}", userDto.getEmail());
-        if (userRepository.getUserByEmail(userDto.getEmail()).isPresent()) {
-            throw new UserAlreadyExistException(
-                    String.format("Пользователь с email=%s уже существует", userDto.getEmail())
-            );
-        }
        return UserMapper.toUserDto(
-               userRepository.saveUser(
+               userRepository.save(
                        UserMapper.toUser(userDto)
                )
        );
@@ -60,13 +55,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public @Valid UserDto updateUser(Long userId, UserDto userDto) {
         log.debug("Запрос updateUser по userId - {}", userId);
-        Optional<User> userOptional = userRepository.getUserById(userId);
+        Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException(
                     String.format("Пользователь с id=%s не найден", userId)
             );
         }
-        userRepository.getUserByEmail(userDto.getEmail()).ifPresent(
+        userRepository.findByEmail(userDto.getEmail()).ifPresent(
                 x -> {
                     if (!x.getId().equals(userDto.getId())) {
                         throw new UserAlreadyExistException(
@@ -80,18 +75,18 @@ public class UserServiceImpl implements UserService {
         if (userDto.getName() != null) user.setName(userDto.getName());
         if (userDto.getEmail() != null) user.setEmail(userDto.getEmail());
 
-        return UserMapper.toUserDto(userRepository.updateUser(user));
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
     @Override
     public void deleteUser(Long userId) {
         log.debug("Запрос deleteUser по userId - {}", userId);
-        Optional<User> user = userRepository.getUserById(userId);
+        Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             throw new UserNotFoundException(
                     String.format("Пользователь с id=%s не найден", userId)
             );
         }
-        userRepository.deleteUser(user.get());
+        userRepository.delete(user.get());
     }
 }
