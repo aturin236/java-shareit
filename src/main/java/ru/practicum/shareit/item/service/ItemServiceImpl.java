@@ -29,7 +29,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getAllItems() {
         log.debug("Запрос getAllItems");
-        return itemRepository.getAllItem().stream()
+        return itemRepository.findAll().stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -37,8 +37,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getAllItemsByUser(Long userId) {
         log.debug("Запрос getAllItemsByUser по userId - {}", userId);
-        checkUserExist(userId);
-        return itemRepository.getAllItemByUser(userId).stream()
+        User user = checkUserExist(userId);
+        return itemRepository.findByOwner(user).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -47,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getItemById(Long userId, Long itemId) {
         log.debug("Запрос getItemById по userId - {} и itemId - {}", userId, itemId);
         checkUserExist(userId);
-        Optional<Item> item = itemRepository.getItemById(itemId);
+        Optional<Item> item = itemRepository.findById(itemId);
         if (item.isEmpty()) {
             throw new ItemNotFoundException(
                     String.format("Вещь с id=%s не найдена", itemId)
@@ -64,14 +64,14 @@ public class ItemServiceImpl implements ItemService {
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
 
-        return ItemMapper.toItemDto(itemRepository.saveItem(item));
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
     public @Valid ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
         log.debug("Запрос updateItem по userId - {} и itemId - {}", userId, itemId);
         checkUserExist(userId);
-        Optional<Item> itemOptional = itemRepository.getItemById(itemId);
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
         if (itemOptional.isEmpty()) {
             throw new ItemNotFoundException(
                     String.format("Вещь с id=%s не найдена", itemId)
@@ -91,7 +91,7 @@ public class ItemServiceImpl implements ItemService {
 
         itemDto.getAvailable().ifPresent(item::setAvailable);
 
-        return ItemMapper.toItemDto(itemRepository.updateItem(item));
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
