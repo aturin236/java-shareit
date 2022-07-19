@@ -3,17 +3,22 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exceptions.BookingBadRequestException;
 import ru.practicum.shareit.exceptions.ItemForbiddenException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,6 +30,8 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public List<ItemDto> getAllItems() {
@@ -35,12 +42,25 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllItemsByUser(Long userId) {
+    public List<ItemWithBookingDto> getAllItemsByUser(Long userId) {
         log.debug("Запрос getAllItemsByUser по userId - {}", userId);
         User user = checkUserExist(userId);
-        return itemRepository.findByOwner(user).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        LocalDateTime date = LocalDateTime.now();
+
+        List<ItemWithBookingDto> list = new ArrayList<>();
+        for (Item item : itemRepository.findByOwner(user)) {
+            ItemWithBookingDto itemWithBookingDto = ItemMapper.toItemWithBookingDto(item);
+
+            itemWithBookingDto.setLastBooking(
+                    bookingRepository.findFirstByItemAndEndBeforeOrderByEndDesc(item, date).orElse(null));
+            itemWithBookingDto.setNextBooking(
+                    bookingRepository.findFirstByItemAndStartAfterOrderByStartAsc(item, date).orElse(null));
+
+            itemWithBookingDto.setComments(CommentMapper.toCommentDtoOut(commentRepository.findCommentsByItem(item)));
+
+            list.add(itemWithBookingDto);
+        }
+        return list;
     }
 
     @Override
@@ -54,7 +74,11 @@ public class ItemServiceImpl implements ItemService {
             );
         }
 
-        return item.map(ItemMapper::toItemDto).orElse(null);
+        List<CommentDtoOut> commentDtoOuts = CommentMapper.toCommentDtoOut(commentRepository.findCommentsByItem(item.get()));
+
+        Optional<ItemDto> itemDto = item.map(ItemMapper::toItemDto);
+        itemDto.ifPresent(x->x.setComments(commentDtoOuts));
+        return itemDto.orElse(null);
     }
 
     @Override
@@ -111,5 +135,26 @@ public class ItemServiceImpl implements ItemService {
         }
 
         return user.get();
+    }
+
+    @Override
+    public CommentDtoOut saveComment(Long userId, Long itemId, CommentDtoIn commentDtoIn) {
+        log.debug("Запрос saveComment с текстом - {}, userId - {}, itemId - {}", commentDtoIn.getText(), userId, itemId);
+
+        Item item = itemRepository.findById(itemId).orElseThrow(
+                () -> new ItemNotFoundException(String.format("Item с id=%s не найден", itemId)));
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException(String.format("User с id=%s не найден", userId)));
+
+        bookingRepository.findFirstByBookerAndItemAndEndIsBefore(user, item, LocalDateTime.now()).orElseThrow(
+                () -> new BookingBadRequestException(String.format(
+                        "User с id=%s не не брал item %s в аренду", userId, itemId)));
+
+        Comment comment = CommentMapper.toComment(commentDtoIn);
+        comment.setItem(item);
+        comment.setAuthor(user);
+        comment.setCreated(LocalDateTime.now());
+
+        return CommentMapper.toCommentDtoOut(commentRepository.save(comment));
     }
 }

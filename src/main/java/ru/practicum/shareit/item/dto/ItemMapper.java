@@ -15,6 +15,16 @@ public class ItemMapper {
                 .build();
     }
 
+    public static ItemWithBookingDto toItemWithBookingDto(Item item) {
+        return ItemWithBookingDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(Optional.of(item.isAvailable()))
+                .requestId(item.getRequest() == null ? null : item.getRequest().getId())
+                .build();
+    }
+
     public static Item toItem(ItemDto itemDto) {
         Item item = new Item();
         item.setId(itemDto.getId());
