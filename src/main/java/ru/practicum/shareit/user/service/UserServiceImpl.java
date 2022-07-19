@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto saveUser(UserDto userDto) {
         log.debug("Запрос saveUser по email - {}", userDto.getEmail());
-       return UserMapper.toUserDto(
+        return UserMapper.toUserDto(
                userRepository.save(
                        UserMapper.toUser(userDto)
                )

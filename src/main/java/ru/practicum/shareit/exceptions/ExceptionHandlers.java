@@ -21,7 +21,13 @@ public class ExceptionHandlers {
         return Map.of("error", e.getMessage());
     }
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class})
+    @ExceptionHandler({BookingBadRequestException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handle400(RuntimeException e) {
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handle404(RuntimeException e) {
         return Map.of("error", e.getMessage());
