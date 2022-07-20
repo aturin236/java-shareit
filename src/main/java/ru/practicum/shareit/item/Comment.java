@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
     private String text;
     @ManyToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "item_id")

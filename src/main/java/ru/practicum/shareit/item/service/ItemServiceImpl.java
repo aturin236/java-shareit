@@ -71,19 +71,19 @@ public class ItemServiceImpl implements ItemService {
 
         List<CommentDtoOut> commentDtoOuts = CommentMapper.toCommentDtoOut(commentRepository.findCommentsByItem(item));
 
-        ItemWithBookingDto ItemWithBookingDto = ItemMapper.toItemWithBookingDto(item);
+        ItemWithBookingDto itemWithBookingDto = ItemMapper.toItemWithBookingDto(item);
 
         if (item.getOwner().getId().equals(userId)) {
-            ItemWithBookingDto.setLastBooking(
+            itemWithBookingDto.setLastBooking(
                     BookingMapper.toBookingForItemDto(
                             bookingRepository.findFirstByItemAndEndBeforeOrderByEndDesc(item, date).orElse(null)));
-            ItemWithBookingDto.setNextBooking(
+            itemWithBookingDto.setNextBooking(
                     BookingMapper.toBookingForItemDto(
                             bookingRepository.findFirstByItemAndStartAfterOrderByStartAsc(item, date).orElse(null)));
         }
-        ItemWithBookingDto.setComments(commentDtoOuts);
+        itemWithBookingDto.setComments(commentDtoOuts);
 
-        return ItemWithBookingDto;
+        return itemWithBookingDto;
     }
 
     @Override
