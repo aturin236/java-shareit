@@ -8,11 +8,9 @@ import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import java.util.List;
 
 public interface ItemService {
-    List<ItemDto> getAllItems();
-
     List<ItemWithBookingDto> getAllItemsByUser(Long userId);
 
-    ItemDto getItemById(Long userId, Long itemId);
+    ItemWithBookingDto getItemById(Long userId, Long itemId);
 
     ItemDto saveItem(Long userId, ItemDto itemDto);
 

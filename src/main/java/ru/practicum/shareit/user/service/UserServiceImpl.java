@@ -32,14 +32,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long userId) {
         log.debug("Запрос getUserById по userId - {}", userId);
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(
-                    String.format("Пользователь с id=%s не найден", userId)
-            );
-        }
+        Optional<User> userOptional = userRepository.findById(userId);
+        User user = userOptional.orElseThrow(
+                () -> new UserNotFoundException(String.format("Пользователь с id=%s не найден", userId)));
 
-        return user.map(UserMapper::toUserDto).orElse(null);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
@@ -55,12 +52,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public @Valid UserDto updateUser(Long userId, UserDto userDto) {
         log.debug("Запрос updateUser по userId - {}", userId);
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException(
-                    String.format("Пользователь с id=%s не найден", userId)
-            );
-        }
         userRepository.findByEmail(userDto.getEmail()).ifPresent(
                 x -> {
                     if (!x.getId().equals(userDto.getId())) {
@@ -70,7 +61,9 @@ public class UserServiceImpl implements UserService {
                     }
                 }
         );
-        User user = userOptional.get();
+        Optional<User> userOptional = userRepository.findById(userId);
+        User user = userOptional.orElseThrow(
+                () -> new UserNotFoundException(String.format("Пользователь с id=%s не найден", userId)));
 
         if (userDto.getName() != null) user.setName(userDto.getName());
         if (userDto.getEmail() != null) user.setEmail(userDto.getEmail());
@@ -81,12 +74,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long userId) {
         log.debug("Запрос deleteUser по userId - {}", userId);
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(
-                    String.format("Пользователь с id=%s не найден", userId)
-            );
-        }
-        userRepository.delete(user.get());
+        Optional<User> userOptional = userRepository.findById(userId);
+        User user = userOptional.orElseThrow(
+                () -> new UserNotFoundException(String.format("Пользователь с id=%s не найден", userId)));
+        userRepository.delete(user);
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.exceptions.BookingBadRequestException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 
@@ -19,6 +20,16 @@ public class BookingMapper {
                 .build();
     }
 
+    public static BookingForItemDtoOut toBookingForItemDto(Booking booking) {
+        if (booking == null) return null;
+        return BookingForItemDtoOut.builder()
+                .id(booking.getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .bookerId(booking.getBooker().getId())
+                .build();
+    }
+
     public static List<BookingDtoOut> toBookingDto(Iterable<Booking> bookings) {
         List<BookingDtoOut> dtos = new ArrayList<>();
         for (Booking booking : bookings) {
@@ -32,6 +43,9 @@ public class BookingMapper {
         Booking booking = new Booking();
         booking.setStart(bookingDtoIn.getStart());
         booking.setEnd(bookingDtoIn.getEnd());
+        if (booking.getEnd().isBefore(booking.getStart())) {
+            throw new BookingBadRequestException("В бронировании неверно заданы даты");
+        }
         booking.setItem(itemRepository.findById(bookingDtoIn.getItemId()).orElseThrow(
                 () -> new ItemNotFoundException(String.format("Item с id=%s не найден", bookingDtoIn.getItemId()))
         ));

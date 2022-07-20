@@ -24,17 +24,27 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
-    BookingRepository bookingRepository;
-    UserRepository userRepository;
-    ItemRepository itemRepository;
+    private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public BookingDtoOut saveBooking(Long bookerId, BookingDtoIn bookingDtoIn) {
         log.debug("Запрос saveBooking для bookerId - {} и itemId - {}", bookerId, bookingDtoIn.getItemId());
 
         Booking booking = BookingMapper.toBooking(bookingDtoIn, itemRepository);
-        booking.setStatus(StatusOfBooking.WAITING);
 
+        if (!booking.getItem().isAvailable()) {
+            throw new BookingBadRequestException(
+                    String.format("Бронирование недоступной вещи %s", booking.getItem().getId()));
+        }
+
+        if (booking.getItem().getOwner().getId().equals(bookerId)) {
+            throw new BookingNotFoundException(
+                    String.format("Бронирование вещи %s ее владельцем %s", booking.getItem().getId(), bookerId));
+        }
+
+        booking.setStatus(StatusOfBooking.WAITING);
         booking.setBooker(userRepository.findById(bookerId).orElseThrow(
                 () -> new UserNotFoundException(String.format("Букер с id=%s не найден", bookerId))
         ));
