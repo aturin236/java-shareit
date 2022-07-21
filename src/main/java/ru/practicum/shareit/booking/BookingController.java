@@ -10,9 +10,6 @@ import ru.practicum.shareit.booking.service.StateOfBooking;
 import javax.validation.Valid;
 import java.util.List;
 
-/**
- * // TODO .
- */
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor

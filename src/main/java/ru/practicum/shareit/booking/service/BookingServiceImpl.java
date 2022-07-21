@@ -54,17 +54,20 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOut updateStatusOfBooking(Long bookingId, Long userId, boolean approved) {
-        log.debug("Запрос updateStatusOfBooking для booking - {} от user - {}. Подтвержден - {}", bookingId, userId, approved);
+        log.debug("Запрос updateStatusOfBooking для booking - {} от user - {}. Подтвержден - {}",
+                bookingId, userId, approved);
 
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(
                 () -> new BookingNotFoundException(String.format("Booking с id=%s не найден", bookingId)));
 
         if (!booking.getItem().getOwner().getId().equals(userId)) {
-            throw new BookingNotFoundException(String.format("Booking с id=%s не принадлежит user %s", bookingId, userId));
+            throw new BookingNotFoundException(String.format("Booking с id=%s не принадлежит user %s",
+                    bookingId, userId));
         }
 
         if (!booking.getStatus().equals(StatusOfBooking.WAITING)) {
-            throw  new BookingBadRequestException(String.format("Booking с id=%s имеет неподходящий статус", bookingId));
+            throw  new BookingBadRequestException(String.format("Booking с id=%s имеет неподходящий статус",
+                    bookingId));
         }
 
         booking.setStatus(approved ? StatusOfBooking.APPROVED : StatusOfBooking.REJECTED);
@@ -80,7 +83,8 @@ public class BookingServiceImpl implements BookingService {
                 () -> new BookingNotFoundException(String.format("Booking с id=%s не найден", bookingId)));
 
         if ((!booking.getItem().getOwner().getId().equals(userId)) && (!booking.getBooker().getId().equals(userId))) {
-            throw new BookingNotFoundException(String.format("Нет прав на просмотр booking=%s для user %s", bookingId, userId));
+            throw new BookingNotFoundException(String.format("Нет прав на просмотр booking=%s для user %s",
+                    bookingId, userId));
         }
 
         return BookingMapper.toBookingDto(booking);
@@ -94,8 +98,7 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime date = LocalDateTime.now();
         switch (state) {
             case CURRENT:
-                bookings = bookingRepository.findBookingsByBookerAndStartIsBeforeAndEndIsAfterOrderByStartDesc(
-                        user, date, date);
+                bookings = bookingRepository.findCurrentBookingByBooker(user, date);
                 break;
             case PAST:
                 bookings = bookingRepository.findBookingsByBookerAndEndIsBeforeOrderByStartDesc(user, date);
@@ -104,10 +107,12 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findBookingsByBookerAndStartIsAfterOrderByStartDesc(user, date);
                 break;
             case WAITING:
-                bookings = bookingRepository.findBookingsByBookerAndStatusOrderByStartDesc(user, StatusOfBooking.WAITING);
+                bookings = bookingRepository.findBookingsByBookerAndStatusOrderByStartDesc(user,
+                        StatusOfBooking.WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findBookingsByBookerAndStatusOrderByStartDesc(user, StatusOfBooking.REJECTED);
+                bookings = bookingRepository.findBookingsByBookerAndStatusOrderByStartDesc(user,
+                        StatusOfBooking.REJECTED);
                 break;
             default:
                 bookings = bookingRepository.findBookingsByBookerOrderByStartDesc(user);
@@ -128,8 +133,7 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime date = LocalDateTime.now();
         switch (state) {
             case CURRENT:
-                bookings = bookingRepository.findBookingsByItemInAndStartIsBeforeAndEndIsAfterOrderByStartDesc(
-                        items, date, date);
+                bookings = bookingRepository.findCurrentBookingByItems(items, date);
                 break;
             case PAST:
                 bookings = bookingRepository.findBookingsByItemInAndEndIsBeforeOrderByStartDesc(items, date);
@@ -138,10 +142,12 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findBookingsByItemInAndStartIsAfterOrderByStartDesc(items, date);
                 break;
             case WAITING:
-                bookings = bookingRepository.findBookingsByItemInAndStatusOrderByStartDesc(items, StatusOfBooking.WAITING);
+                bookings = bookingRepository.findBookingsByItemInAndStatusOrderByStartDesc(items,
+                        StatusOfBooking.WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findBookingsByItemInAndStatusOrderByStartDesc(items, StatusOfBooking.REJECTED);
+                bookings = bookingRepository.findBookingsByItemInAndStatusOrderByStartDesc(items,
+                        StatusOfBooking.REJECTED);
                 break;
             default:
                 bookings = bookingRepository.findBookingsByItemInOrderByStartDesc(items);

@@ -38,21 +38,15 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemWithBookingDto> getAllItemsByUser(Long userId) {
         log.debug("Запрос getAllItemsByUser по userId - {}", userId);
         User user = checkUserExist(userId);
-        LocalDateTime date = LocalDateTime.now();
 
         List<ItemWithBookingDto> list = new ArrayList<>();
         for (Item item : itemRepository.findByOwner(user)) {
             ItemWithBookingDto itemWithBookingDto = ItemMapper.toItemWithBookingDto(item);
 
-            if (item.getOwner().getId().equals(userId)) {
-                itemWithBookingDto.setLastBooking(
-                        BookingMapper.toBookingForItemDto(
-                                bookingRepository.findFirstByItemAndEndBeforeOrderByEndDesc(item, date).orElse(null)));
-                itemWithBookingDto.setNextBooking(
-                        BookingMapper.toBookingForItemDto(
-                                bookingRepository.findFirstByItemAndStartAfterOrderByStartAsc(item, date).orElse(null)));
-            }
-            itemWithBookingDto.setComments(CommentMapper.toCommentDtoOut(commentRepository.findCommentsByItem(item)));
+            setBookingIfoToItemDto(itemWithBookingDto, item, userId);
+            itemWithBookingDto.setComments(
+                    CommentMapper.toCommentDtoOut(
+                            commentRepository.findCommentsByItem(item)));
 
             list.add(itemWithBookingDto);
         }
@@ -67,21 +61,12 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemOptional.orElseThrow(
                 () -> new ItemNotFoundException(String.format("Вещь с id=%s не найдена", itemId)));
 
-        LocalDateTime date = LocalDateTime.now();
-
-        List<CommentDtoOut> commentDtoOuts = CommentMapper.toCommentDtoOut(commentRepository.findCommentsByItem(item));
-
         ItemWithBookingDto itemWithBookingDto = ItemMapper.toItemWithBookingDto(item);
 
-        if (item.getOwner().getId().equals(userId)) {
-            itemWithBookingDto.setLastBooking(
-                    BookingMapper.toBookingForItemDto(
-                            bookingRepository.findFirstByItemAndEndBeforeOrderByEndDesc(item, date).orElse(null)));
-            itemWithBookingDto.setNextBooking(
-                    BookingMapper.toBookingForItemDto(
-                            bookingRepository.findFirstByItemAndStartAfterOrderByStartAsc(item, date).orElse(null)));
-        }
-        itemWithBookingDto.setComments(commentDtoOuts);
+        setBookingIfoToItemDto(itemWithBookingDto, item, userId);
+        itemWithBookingDto.setComments(
+                CommentMapper.toCommentDtoOut(
+                        commentRepository.findCommentsByItem(item)));
 
         return itemWithBookingDto;
     }
@@ -136,7 +121,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDtoOut saveComment(Long userId, Long itemId, CommentDtoIn commentDtoIn) {
-        log.debug("Запрос saveComment с текстом - {}, userId - {}, itemId - {}", commentDtoIn.getText(), userId, itemId);
+        log.debug("Запрос saveComment с текстом - {}, userId - {}, itemId - {}",
+                commentDtoIn.getText(), userId, itemId);
 
         Item item = itemRepository.findById(itemId).orElseThrow(
                 () -> new ItemNotFoundException(String.format("Item с id=%s не найден", itemId)));
@@ -153,5 +139,20 @@ public class ItemServiceImpl implements ItemService {
         comment.setCreated(LocalDateTime.now());
 
         return CommentMapper.toCommentDtoOut(commentRepository.save(comment));
+    }
+
+    private void setBookingIfoToItemDto(ItemWithBookingDto itemDto, Item item, Long userId) {
+        LocalDateTime date = LocalDateTime.now();
+
+        if (item.getOwner().getId().equals(userId)) {
+            itemDto.setLastBooking(
+                    BookingMapper.toBookingForItemDto(
+                            bookingRepository.findFirstByItemAndEndBeforeOrderByEndDesc(item, date)
+                                    .orElse(null)));
+            itemDto.setNextBooking(
+                    BookingMapper.toBookingForItemDto(
+                            bookingRepository.findFirstByItemAndStartAfterOrderByStartAsc(item, date)
+                                    .orElse(null)));
+        }
     }
 }
