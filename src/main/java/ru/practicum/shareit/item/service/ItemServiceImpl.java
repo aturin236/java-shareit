@@ -129,7 +129,7 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new UserNotFoundException(String.format("User с id=%s не найден", userId)));
 
-        bookingRepository.findFirstByBookerAndItemAndEndIsBefore(user, item, LocalDateTime.now()).orElseThrow(
+        bookingRepository.pastBookingByBookerAndItem(user.getId(), item.getId(), LocalDateTime.now()).orElseThrow(
                 () -> new BookingBadRequestException(String.format(
                         "User с id=%s не не брал item %s в аренду", userId, itemId)));
 
@@ -147,11 +147,11 @@ public class ItemServiceImpl implements ItemService {
         if (item.getOwner().getId().equals(userId)) {
             itemDto.setLastBooking(
                     BookingMapper.toBookingForItemDto(
-                            bookingRepository.findFirstByItemAndEndBeforeOrderByEndDesc(item, date)
+                            bookingRepository.lastBooking(item.getId(), date)
                                     .orElse(null)));
             itemDto.setNextBooking(
                     BookingMapper.toBookingForItemDto(
-                            bookingRepository.findFirstByItemAndStartAfterOrderByStartAsc(item, date)
+                            bookingRepository.nextBooking(item.getId(), date)
                                     .orElse(null)));
         }
     }

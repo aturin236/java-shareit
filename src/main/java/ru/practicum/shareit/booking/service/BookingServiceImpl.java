@@ -98,20 +98,20 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime date = LocalDateTime.now();
         switch (state) {
             case CURRENT:
-                bookings = bookingRepository.findCurrentBookingByBooker(user, date);
+                bookings = bookingRepository.currentBookingByBooker(user, date);
                 break;
             case PAST:
-                bookings = bookingRepository.findBookingsByBookerAndEndIsBeforeOrderByStartDesc(user, date);
+                bookings = bookingRepository.pastBookingByBooker(user, date);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findBookingsByBookerAndStartIsAfterOrderByStartDesc(user, date);
+                bookings = bookingRepository.futureBookingByBooker(user, date);
                 break;
             case WAITING:
-                bookings = bookingRepository.findBookingsByBookerAndStatusOrderByStartDesc(user,
+                bookings = bookingRepository.bookingsByBookerAndStatus(user,
                         StatusOfBooking.WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findBookingsByBookerAndStatusOrderByStartDesc(user,
+                bookings = bookingRepository.bookingsByBookerAndStatus(user,
                         StatusOfBooking.REJECTED);
                 break;
             default:
@@ -133,20 +133,20 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime date = LocalDateTime.now();
         switch (state) {
             case CURRENT:
-                bookings = bookingRepository.findCurrentBookingByItems(items, date);
+                bookings = bookingRepository.currentBookingByItems(items, date);
                 break;
             case PAST:
-                bookings = bookingRepository.findBookingsByItemInAndEndIsBeforeOrderByStartDesc(items, date);
+                bookings = bookingRepository.pastBookingByItems(items, date);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findBookingsByItemInAndStartIsAfterOrderByStartDesc(items, date);
+                bookings = bookingRepository.futureBookingByItems(items, date);
                 break;
             case WAITING:
-                bookings = bookingRepository.findBookingsByItemInAndStatusOrderByStartDesc(items,
+                bookings = bookingRepository.bookingsByItemsAndStatus(items,
                         StatusOfBooking.WAITING);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findBookingsByItemInAndStatusOrderByStartDesc(items,
+                bookings = bookingRepository.bookingsByItemsAndStatus(items,
                         StatusOfBooking.REJECTED);
                 break;
             default:
