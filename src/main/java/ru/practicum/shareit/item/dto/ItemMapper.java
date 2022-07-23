@@ -15,12 +15,23 @@ public class ItemMapper {
                 .build();
     }
 
-    public static Item toItem(ItemDto itemDto) {
-        return Item.builder()
-                .id(itemDto.getId())
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable().orElse(false))
+    public static ItemWithBookingDto toItemWithBookingDto(Item item) {
+        return ItemWithBookingDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(Optional.of(item.isAvailable()))
+                .requestId(item.getRequest() == null ? null : item.getRequest().getId())
                 .build();
+    }
+
+    public static Item toItem(ItemDto itemDto) {
+        Item item = new Item();
+        item.setId(itemDto.getId());
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable().orElse(false));
+
+        return item;
     }
 }

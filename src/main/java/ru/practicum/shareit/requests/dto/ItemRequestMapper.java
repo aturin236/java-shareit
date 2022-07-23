@@ -13,10 +13,11 @@ public class ItemRequestMapper {
     }
 
     public static ItemRequest toItemRequest(ItemRequestDto itemRequestDto) {
-        return ItemRequest.builder()
-                .id(itemRequestDto.getId())
-                .description(itemRequestDto.getDescription())
-                .created(itemRequestDto.getCreated())
-                .build();
+        ItemRequest itemRequest = new ItemRequest();
+        itemRequest.setId(itemRequestDto.getId());
+        itemRequest.setDescription(itemRequestDto.getDescription());
+        itemRequest.setCreated(itemRequestDto.getCreated());
+
+        return  itemRequest;
     }
 }
